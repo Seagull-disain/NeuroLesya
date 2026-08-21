@@ -21,15 +21,15 @@ class MemoryAwareNeuroLesyaCore(NeuroLesyaCore):
     def handle(self, text: str) -> str:
         request = Request(text=text)
         intent = self.intent.detect(request)
-        previous = [item.text for item in self.memory.recent()]
+        relevant = self.memory.search(text, limit=5)
         context = self.context.build(request)
-        context.messages = [*previous, *context.messages]
-        context.data["memory_count"] = len(previous)
+        context.messages = [item.text for item in relevant] + context.messages
+        context.data["memory_count"] = len(relevant)
         result = self.orchestrator.run(intent, context)
         response = self.response.build(result)
         if text.strip():
             self.memory.remember(text)
-        self.last_memory_context = previous
+        self.last_memory_context = [item.text for item in relevant]
         return response
 
     def recent_memory(self, limit: int = 5) -> list[str]:
