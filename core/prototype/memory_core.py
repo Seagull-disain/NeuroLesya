@@ -8,15 +8,16 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from main import NeuroLesyaCore, Request
+from memory.persistent import PersistentMemoryStore
 from memory.prototype import MemoryStore
 
 
 class MemoryAwareNeuroLesyaCore(NeuroLesyaCore):
-    """Connect the core pipeline to the prototype memory store."""
+    """Connect the core pipeline to persistent memory by default."""
 
-    def __init__(self, memory: MemoryStore | None = None) -> None:
+    def __init__(self, memory: MemoryStore | None = None, memory_path: str | Path = "memory.json") -> None:
         super().__init__()
-        self.memory = memory or MemoryStore()
+        self.memory = memory if memory is not None else PersistentMemoryStore(memory_path)
 
     def handle(self, text: str) -> str:
         request = Request(text=text)
